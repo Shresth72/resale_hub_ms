@@ -55,3 +55,79 @@
 ### Service Endpoints
 
 <img src="./public/images/service_endpoints.png" alt="database design"  style="width:800px;" />
+
+### Serverless Framework
+
+- Reduce Overhead
+- Deploy whole application in one go
+- All endpoints and function can be declared in the infrastructure.
+- Focus purely on building services instead of other infrastructure stuff
+
+<img src="./public/images/serverless.png" alt="database design"  style="width:800px;" />
+
+#### Advantages
+
+1. **No Server Management:** As the name suggests, serverless architecture eliminates the need for server system administration. The cloud provider handles the runtime environment and server resources.
+2. **Auto-Scaling:** Serverless architecture can automatically scale to accommodate traffic patterns. If a function becomes extremely popular, the serverless architecture can automatically allocate resources to handle the increased load.
+3. **Built-in High Availability and Fault Tolerance:** Cloud providers automatically manage serverless function availability. If a function fails, the provider can automatically shift resources to keep it running.
+4. **Faster Time to Market:** Serverless architecture can speed up the software development process. Developers can focus on writing the code that delivers value to the business, rather than managing and operating servers.
+5. **Event-Driven and Instant Scale:** Serverless architectures are designed to process individual requests, making them ideal for parallel workloads, real-time file processing, and other event-driven scenarios.
+6. **Reduced Latency:** Serverless allows you to run your code closer to your users by deploying your function across multiple regions around the world. This reduces latency and improves user experience.
+7. **Microservices Friendly:** Serverless is a natural fit for microservices architecture, as it allows you to deploy, scale, and manage each microservice independently.
+
+<br/><br/>
+
+**Implementing User Service**
+-
+
+- Install AWS and Serverless cli globally
+- Setup a 'AWS - Node.js - HTTP API' template using command:  ```serverless``` and setup user-service
+- Install serverless-offline and serverless-typescript to run on local system using command in user-service: 
+  
+```bash
+serverless plugin install --name serverless-offline
+
+serverless plugin install --name serverless-plugin-typescript
+``` 
+
+- Now, we can create routes by using route handlers and binding them to the serverless.yaml file functions. So, on spinning up the serverless server, when we request for a specific route, it calls that binded route handler function and returns the results according to the method specified.
+
+```serverless.yml```
+```yml
+# --- Rest of the code --- #
+functions:
+  signup:
+    handler: app/handler.Signup
+    events:
+      - httpApi:
+          path: /signup
+          method: get
+```
+
+```handler.ts```
+```ts
+import { APIGatewayProxyEventV2 } from "aws-lambda";
+
+export const Signup = async (event: APIGatewayProxyEventV2) => {
+  console.log(event);
+  // Application business logic
+
+  return {
+    statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*"
+    },
+    body: JSON.stringify({
+      message: "response from user-service Signup handler",
+      data: {}
+    })
+  };
+};
+```
+
+- The user-service has multiple routes and handlers, which means we can't put all routes along with their business login in one file.
+- So, AWS Lambda takes the specific output from some other files where all business logic and service is going to be executed and those files will return the specific output to the handler functions.
+
+### Implementing all services, routes and database inside User Service
+
+- Using a Data Transport Object model to transfer requests into objects, so that we can validate each and every input properly.
