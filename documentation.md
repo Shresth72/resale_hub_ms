@@ -125,9 +125,12 @@ export const Signup = async (event: APIGatewayProxyEventV2) => {
 };
 ```
 
-- The user-service has multiple routes and handlers, which means we can't put all routes along with their business login in one file.
-- So, AWS Lambda takes the specific output from some other files where all business logic and service is going to be executed and those files will return the specific output to the handler functions.
-
 ### Implementing all services, routes and database inside User Service
 
+- The user-service has multiple routes and handlers, which means we can't put all routes along with their business login in one file.
+- So, AWS Lambda takes the specific output from some other files where all business logic and service is going to be executed and those files will return the specific output to the handler functions.
 - Using a Data Transport Object model to transfer requests into objects, so that we can validate each and every input properly.
+- To handle middleware, we are using middy. So, we can focus just on writing Lambda handlers and logic.
+- ```middy()``` returns a new enhanced instance of the original handler, to which we can attach our own middleware.
+- To attach middleware, use ```.use(somemiddleware())```
+

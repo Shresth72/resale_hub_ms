@@ -15,6 +15,8 @@ class UserService {
     // User Creation, Verification, and Login
     CreateUser(event) {
         return __awaiter(this, void 0, void 0, function* () {
+            const body = JSON.parse(event.body);
+            console.log(body.email, body.password);
             return (0, response_1.SuccessResponse)({ message: "response from create user" });
         });
     }

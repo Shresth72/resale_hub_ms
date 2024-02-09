@@ -6,6 +6,7 @@ export default class UserService {
 
   // User Creation, Verification, and Login
   async CreateUser(event: APIGatewayProxyEventV2) {
+
     return SuccessResponse({ message: "response from create user" });
   }
 
