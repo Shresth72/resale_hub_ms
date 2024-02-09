@@ -51,3 +51,7 @@
 ### Database Design
 
 <img src="./public/images/db_design.png" alt="database design"  style="width:800px;" />
+
+### Service Endpoints
+
+<img src="./public/images/service_endpoints.png" alt="database design"  style="width:800px;" />
