@@ -1,13 +1,26 @@
-import { SuccessResponse } from "../utility/response";
+import { ErrorResponse, SuccessResponse } from "../utility/response";
 import { APIGatewayProxyEventV2 } from "aws-lambda";
+import { UserRepository } from "../repository/userRepository";
+import { autoInjectable } from "tsyringe";
+import { SignupInput } from "../models/zod/SignupInput";
+import { ZodErrorHandler } from "../utility/errors";
 
+@autoInjectable()
 export default class UserService {
-  constructor() {}
+  repository: UserRepository;
+
+  constructor(repository: UserRepository) {
+    this.repository = repository;
+  }
 
   // User Creation, Verification, and Login
   async CreateUser(event: APIGatewayProxyEventV2) {
+    const input = ZodErrorHandler(event, SignupInput);
+    if (input instanceof Error) {
+      return ErrorResponse(400, input);
+    }
 
-    return SuccessResponse({ message: "response from create user" });
+    return SuccessResponse(input);
   }
 
   async UserLogin(event: APIGatewayProxyEventV2) {

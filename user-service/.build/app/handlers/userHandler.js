@@ -15,7 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Payment = exports.Cart = exports.Profile = exports.Verify = exports.Login = exports.Signup = void 0;
 const userService_1 = __importDefault(require("../service/userService"));
 const response_1 = require("../utility/response");
-const service = new userService_1.default();
+const tsyringe_1 = require("tsyringe");
+const service = tsyringe_1.container.resolve(userService_1.default);
 const Signup = (event) => __awaiter(void 0, void 0, void 0, function* () {
     return service.CreateUser(event);
 });
