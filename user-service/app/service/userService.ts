@@ -20,22 +20,26 @@ export default class UserService {
 
   // User Creation, Verification, and Login
   async CreateUser(event: APIGatewayProxyEventV2) {
-    const input = ZodErrorHandler(event, SignupInput);
-    if (input instanceof Error) {
-      return ErrorResponse(400, input);
+    try {
+      const input = ZodErrorHandler(event, SignupInput);
+      if (input instanceof Error) {
+        return ErrorResponse(400, input);
+      }
+
+      const salt = await GetSalt();
+      const hashedPassword = await GetHashedPassword(input.password, salt);
+      const data = await this.repository.createAccount({
+        email: input.email,
+        password: hashedPassword,
+        salt,
+        phone: input.phone,
+        userType: "BUYER"
+      });
+
+      return SuccessResponse(data);
+    } catch (err) {
+      return ErrorResponse(500, err);
     }
-
-    const salt = await GetSalt();
-    const hashedPassword = await GetHashedPassword(input.password, salt);
-    const data = await this.repository.createAccount({
-      email: input.email,
-      password: hashedPassword,
-      salt,
-      phone: input.phone,
-      userType: "BUYER"
-    });
-
-    return SuccessResponse(input);
   }
 
   async UserLogin(event: APIGatewayProxyEventV2) {

@@ -10,11 +10,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepository = void 0;
+const databaseClient_1 = require("../utility/databaseClient");
 // Data Access Layer
 class UserRepository {
     constructor() { }
-    createAccount({ email, password, salt, phone, userType }) {
-        return __awaiter(this, void 0, void 0, function* () { });
+    createAccount({ phone, email, password, salt, userType }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const client = yield (0, databaseClient_1.DBClient)();
+            yield client.connect();
+            const queryString = "INSERT INTO users (phone, email, password, salt, user_type) VALUES ($1, $2, $3, $4, $5) RETURNING *;";
+            const values = [phone, email, password, salt, userType];
+            const result = yield client.query(queryString, values);
+            yield client.end();
+            if (result.rowCount > 0) {
+                return result.rows[0];
+            }
+        });
     }
 }
 exports.UserRepository = UserRepository;
