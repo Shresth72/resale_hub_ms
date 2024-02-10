@@ -3,12 +3,19 @@ import { APIGatewayProxyEventV2 } from "aws-lambda";
 import { UserRepository } from "../repository/userRepository";
 import { autoInjectable } from "tsyringe";
 import { SignupInput } from "../models/zod/SignupInput";
+import { LoginInput } from "../models/zod/LoginInput";
 import { ZodErrorHandler } from "../utility/errors";
 import {
   GetSalt,
   GetHashedPassword,
-  ValidatePassword
+  ValidatePassword,
+  GetToken,
+  VerifyToken
 } from "../utility/password";
+import {
+  GenerateAccessCode,
+  SendVerificationCode
+} from "../utility/notification";
 
 @autoInjectable()
 export default class UserService {
@@ -43,7 +50,42 @@ export default class UserService {
   }
 
   async UserLogin(event: APIGatewayProxyEventV2) {
-    return SuccessResponse({ message: "response from user login" });
+    try {
+      const input = ZodErrorHandler(event, LoginInput);
+      if (input instanceof Error) {
+        return ErrorResponse(400, input);
+      }
+
+      const data = await this.repository.findAccount(input.email);
+      const verify = await ValidatePassword(
+        input.password,
+        data.password,
+        data.salt
+      );
+
+      if (!verify) {
+        return ErrorResponse(401, "Password is incorrect");
+      }
+      const token = GetToken(data);
+
+      return SuccessResponse({ token });
+    } catch (err) {
+      return ErrorResponse(500, err);
+    }
+  }
+
+  async GetVerificationToken(event: APIGatewayProxyEventV2) {
+    const token = event.headers.authorization;
+    const payload = await VerifyToken(token);
+
+    if (payload) {
+      const { code, expiry } = GenerateAccessCode();
+
+      const reponse = await SendVerificationCode(code, payload.phone);
+      return SuccessResponse({
+        message: "verification code is sent to your registered phone number"
+      });
+    }
   }
 
   async VerifyUser(event: APIGatewayProxyEventV2) {

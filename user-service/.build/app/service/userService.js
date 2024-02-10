@@ -22,8 +22,10 @@ const response_1 = require("../utility/response");
 const userRepository_1 = require("../repository/userRepository");
 const tsyringe_1 = require("tsyringe");
 const SignupInput_1 = require("../models/zod/SignupInput");
+const LoginInput_1 = require("../models/zod/LoginInput");
 const errors_1 = require("../utility/errors");
 const password_1 = require("../utility/password");
+const notification_1 = require("../utility/notification");
 let UserService = class UserService {
     constructor(repository) {
         this.repository = repository;
@@ -54,7 +56,35 @@ let UserService = class UserService {
     }
     UserLogin(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            return (0, response_1.SuccessResponse)({ message: "response from user login" });
+            try {
+                const input = (0, errors_1.ZodErrorHandler)(event, LoginInput_1.LoginInput);
+                if (input instanceof Error) {
+                    return (0, response_1.ErrorResponse)(400, input);
+                }
+                const data = yield this.repository.findAccount(input.email);
+                const verify = yield (0, password_1.ValidatePassword)(input.password, data.password, data.salt);
+                if (!verify) {
+                    return (0, response_1.ErrorResponse)(401, "Password is incorrect");
+                }
+                const token = (0, password_1.GetToken)(data);
+                return (0, response_1.SuccessResponse)({ token });
+            }
+            catch (err) {
+                return (0, response_1.ErrorResponse)(500, err);
+            }
+        });
+    }
+    GetVerificationToken(event) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const token = event.headers.authorization;
+            const payload = yield (0, password_1.VerifyToken)(token);
+            if (payload) {
+                const { code, expiry } = (0, notification_1.GenerateAccessCode)();
+                const reponse = yield (0, notification_1.SendVerificationCode)(code, payload.phone);
+                return (0, response_1.SuccessResponse)({
+                    message: "verification code is sent to your registered phone number"
+                });
+            }
         });
     }
     VerifyUser(event) {

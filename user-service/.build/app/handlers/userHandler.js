@@ -26,7 +26,16 @@ const Login = (event) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.Login = Login;
 const Verify = (event) => __awaiter(void 0, void 0, void 0, function* () {
-    return service.VerifyUser(event);
+    const httpMethod = event.requestContext.http.method.toLowerCase();
+    if (httpMethod === "post") {
+        return service.VerifyUser(event);
+    }
+    else if (httpMethod === "get") {
+        return service.GetVerificationToken(event);
+    }
+    else {
+        return (0, response_1.ErrorResponse)(404, "invalid http method");
+    }
 });
 exports.Verify = Verify;
 const Profile = (event) => __awaiter(void 0, void 0, void 0, function* () {
