@@ -13,10 +13,8 @@ exports.UserRepository = void 0;
 // Data Access Layer
 class UserRepository {
     constructor() { }
-    CreateUserOperation() {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log("User Created in DB");
-        });
+    createAccount({ email, password, salt, phone, userType }) {
+        return __awaiter(this, void 0, void 0, function* () { });
     }
 }
 exports.UserRepository = UserRepository;

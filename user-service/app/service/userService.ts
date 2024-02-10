@@ -4,6 +4,11 @@ import { UserRepository } from "../repository/userRepository";
 import { autoInjectable } from "tsyringe";
 import { SignupInput } from "../models/zod/SignupInput";
 import { ZodErrorHandler } from "../utility/errors";
+import {
+  GetSalt,
+  GetHashedPassword,
+  ValidatePassword
+} from "../utility/password";
 
 @autoInjectable()
 export default class UserService {
@@ -19,6 +24,16 @@ export default class UserService {
     if (input instanceof Error) {
       return ErrorResponse(400, input);
     }
+
+    const salt = await GetSalt();
+    const hashedPassword = await GetHashedPassword(input.password, salt);
+    const data = await this.repository.createAccount({
+      email: input.email,
+      password: hashedPassword,
+      salt,
+      phone: input.phone,
+      userType: "BUYER"
+    });
 
     return SuccessResponse(input);
   }

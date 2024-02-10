@@ -34,6 +34,15 @@ let UserService = class UserService {
             if (input instanceof Error) {
                 return (0, response_1.ErrorResponse)(400, input);
             }
+            const salt = "";
+            const hashedPassword = "";
+            const data = yield this.repository.createAccount({
+                email: input.email,
+                password: hashedPassword,
+                salt,
+                phone: input.phone,
+                userType: "BUYER"
+            });
             return (0, response_1.SuccessResponse)(input);
         });
     }

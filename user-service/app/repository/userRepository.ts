@@ -1,9 +1,11 @@
+import { UserModel } from "../models/UserModel";
 
 // Data Access Layer
 export class UserRepository {
-    constructor() {}
+  constructor() {}
 
-    async CreateUserOperation() {
-        console.log("User Created in DB");
-    }
+  async createAccount({ email, password, salt, phone, userType }: UserModel) {
+    // DB Operation
+    
+  }
 }
