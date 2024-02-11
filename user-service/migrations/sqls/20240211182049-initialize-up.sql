@@ -1,0 +1,15 @@
+CREATE TABLE "users" {
+    "user_id" bigserial PRIMARY KEY,
+    "phone" varchar NOT NULL,
+    "email" varchar NOT NULL,
+    "password" varchar NOT NULL,
+    "salt" varchar NOT NULL,
+    "user_type" varchar NOT NULL,
+    "first_name" varchar NOT NULL,
+    "last_name" varchar NOT NULL,
+    "profile_pic" text,
+    "verification_code" integer,
+    "expiry" timestampz,
+    "verified" boolean NOT NULL DEFAULT FALSE,
+    "created_at" timestampz NOT NULL DEFAULT (now()),
+}
