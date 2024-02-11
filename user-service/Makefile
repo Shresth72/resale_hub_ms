@@ -7,4 +7,10 @@ stop_db:
 server:
 	yarn run dev
 
-.PHONY: start_db stop_db
+migrate: 
+	db-migrate up
+
+migrate-down: 
+	db-migrate down
+
+.PHONY: start_db stop_db server migrate migrate-down
