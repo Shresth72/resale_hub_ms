@@ -3,6 +3,7 @@ import { APIGatewayProxyEventV2 } from "aws-lambda";
 import { UserRepository } from "../repository/userRepository";
 import { autoInjectable } from "tsyringe";
 import { SignupInput } from "../models/zod/SignupInput";
+import { VerificationInput } from "../models/zod/UpdateInput";
 import { LoginInput } from "../models/zod/LoginInput";
 import { ZodErrorHandler } from "../utility/errors";
 import {
@@ -12,6 +13,7 @@ import {
   GetToken,
   VerifyToken
 } from "../utility/password";
+import { TimeDifference } from "../utility/dateHelper";
 import {
   GenerateAccessCode,
   SendVerificationCode
@@ -78,18 +80,56 @@ export default class UserService {
     const token = event.headers.authorization;
     const payload = await VerifyToken(token);
 
-    if (payload) {
-      const { code, expiry } = GenerateAccessCode();
-
-      const reponse = await SendVerificationCode(code, payload.phone);
-      return SuccessResponse({
-        message: "verification code is sent to your registered phone number"
-      });
+    if (!payload) {
+      return ErrorResponse(403, "Invalid token");
     }
+    const { code, expiry } = GenerateAccessCode();
+
+    await this.repository.updateVerificationCode(payload.user_id, code, expiry);
+
+    console.log(code, expiry);
+
+    // const reponse = await SendVerificationCode(code, payload.phone);
+    return SuccessResponse({
+      message: "verification code is sent to your registered phone number"
+    });
   }
 
   async VerifyUser(event: APIGatewayProxyEventV2) {
-    return SuccessResponse({ message: "response from verify user" });
+    const token = event.headers.authorization;
+    const payload = await VerifyToken(token);
+
+    if (!payload) {
+      return ErrorResponse(403, "Invalid token");
+    }
+
+    const input = ZodErrorHandler(event, VerificationInput);
+    if (input instanceof Error) {
+      return ErrorResponse(400, input);
+    }
+
+    const { verification_code, expiry } = await this.repository.findAccount(
+      payload.email
+    );
+
+    // find the user account
+    if (verification_code === input.code) {
+      // check expiry
+      const currentTime = new Date();
+      const diff = TimeDifference(expiry, currentTime.toISOString(), "m");
+
+      if (diff > 0) {
+        console.log("verified successfully");
+
+        // update on DB
+        await this.repository.updateVerifyUser(payload.user_id);
+      } else {
+        return ErrorResponse(403, "Verification code has expired");
+      }
+
+    }
+
+    return SuccessResponse({ message: "user verified successfully" });
   }
 
   // User Profile

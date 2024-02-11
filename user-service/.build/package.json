@@ -5,13 +5,17 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "dev": "serverless offline"
+    "dev": "serverless offline",
+    "deploy": "serverless deploy --verbose"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.133",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/pg": "^8.11.0",
     "serverless-offline": "^13.3.3",
     "serverless-plugin-typescript": "^2.1.5",
     "ts-node": "^10.9.2",
@@ -20,6 +24,17 @@
   "dependencies": {
     "@middy/core": "^5.2.3",
     "@middy/http-json-body-parser": "^5.2.3",
-    "aws-lambda": "^1.0.7"
+    "aws-lambda": "^1.0.7",
+    "bcrypt": "^5.1.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "db-migrate-pg": "^1.5.2",
+    "dotenv": "^16.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "reflect-metadata": "^0.2.1",
+    "tsyringe": "^4.8.0",
+    "twilio": "^4.22.0",
+    "zod": "^3.22.4"
   }
 }

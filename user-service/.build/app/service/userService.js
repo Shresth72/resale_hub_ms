@@ -22,9 +22,11 @@ const response_1 = require("../utility/response");
 const userRepository_1 = require("../repository/userRepository");
 const tsyringe_1 = require("tsyringe");
 const SignupInput_1 = require("../models/zod/SignupInput");
+const UpdateInput_1 = require("../models/zod/UpdateInput");
 const LoginInput_1 = require("../models/zod/LoginInput");
 const errors_1 = require("../utility/errors");
 const password_1 = require("../utility/password");
+const dateHelper_1 = require("../utility/dateHelper");
 const notification_1 = require("../utility/notification");
 let UserService = class UserService {
     constructor(repository) {
@@ -78,18 +80,45 @@ let UserService = class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             const token = event.headers.authorization;
             const payload = yield (0, password_1.VerifyToken)(token);
-            if (payload) {
-                const { code, expiry } = (0, notification_1.GenerateAccessCode)();
-                const reponse = yield (0, notification_1.SendVerificationCode)(code, payload.phone);
-                return (0, response_1.SuccessResponse)({
-                    message: "verification code is sent to your registered phone number"
-                });
+            if (!payload) {
+                return (0, response_1.ErrorResponse)(403, "Invalid token");
             }
+            const { code, expiry } = (0, notification_1.GenerateAccessCode)();
+            yield this.repository.updateVerificationCode(payload.user_id, code, expiry);
+            console.log(code, expiry);
+            // const reponse = await SendVerificationCode(code, payload.phone);
+            return (0, response_1.SuccessResponse)({
+                message: "verification code is sent to your registered phone number"
+            });
         });
     }
     VerifyUser(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            return (0, response_1.SuccessResponse)({ message: "response from verify user" });
+            const token = event.headers.authorization;
+            const payload = yield (0, password_1.VerifyToken)(token);
+            if (!payload) {
+                return (0, response_1.ErrorResponse)(403, "Invalid token");
+            }
+            const input = (0, errors_1.ZodErrorHandler)(event, UpdateInput_1.VerificationInput);
+            if (input instanceof Error) {
+                return (0, response_1.ErrorResponse)(400, input);
+            }
+            const { verification_code, expiry } = yield this.repository.findAccount(payload.email);
+            // find the user account
+            if (verification_code === input.code) {
+                // check expiry
+                const currentTime = new Date();
+                const diff = (0, dateHelper_1.TimeDifference)(expiry, currentTime.toISOString(), "m");
+                if (diff > 0) {
+                    console.log("verified successfully");
+                    // update on DB
+                    yield this.repository.updateVerifyUser(payload.user_id);
+                }
+                else {
+                    return (0, response_1.ErrorResponse)(403, "Verification code has expired");
+                }
+            }
+            return (0, response_1.SuccessResponse)({ message: "user verified successfully" });
         });
     }
     // User Profile

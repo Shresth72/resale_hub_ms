@@ -43,7 +43,7 @@ export const VerifyToken = async (
 ): Promise<UserModel | false> => {
   try {
     if (token != "") {
-      const payload = await jwt.verify(
+      const payload = jwt.verify(
         token.split(" ")[1],
         process.env.APP_SECRET as string
       );
