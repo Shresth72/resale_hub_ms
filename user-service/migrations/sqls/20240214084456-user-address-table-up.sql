@@ -4,7 +4,7 @@ CREATE TABLE "address" (
     "address_line1" text,
     "address_line2" text,
     "city" varchar,
-    "post_code" integer,
+    "post_code" varchar,
     "country" varchar,
     "created_at" timestamp NOT NULL DEFAULT (now())
 );

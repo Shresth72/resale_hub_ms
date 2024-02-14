@@ -1,5 +1,6 @@
 import { UserModel } from "../models/UserModel";
 import { DBClient } from "../utility/databaseClient";
+import { AddressModel } from "./../models/AddressModel";
 import { ProfileInputType } from "./../models/zod/AddressInput";
 import { DBOperation } from "./dbOperation";
 
@@ -79,17 +80,10 @@ export class UserRepository extends DBOperation {
     {
       firstName,
       lastName,
-      userType,
-      address: { addressLine1, addressLine2, city, postCode, country }
-    }: typeof ProfileInputType
-  ) {
-    const updatedUser = await this.updateUser(
-      user_id,
-      firstName,
-      lastName,
+      address: { addressLine1, addressLine2, city, post_code, country },
       userType
-    );
-
+    }: ProfileInputType
+  ) {
     const queryString =
       "INSERT INTO address(user_id, address_line1, address_line2, city, post_code, country) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;";
     const values = [
@@ -97,7 +91,7 @@ export class UserRepository extends DBOperation {
       addressLine1,
       addressLine2,
       city,
-      postCode,
+      post_code,
       country
     ];
 
@@ -106,6 +100,10 @@ export class UserRepository extends DBOperation {
       return result.rows[0] as UserModel;
     }
 
-    return true;
+    throw new Error("error while creating profile");
+  }
+
+  async getUserProfile(user_id: number) {
+    
   }
 }

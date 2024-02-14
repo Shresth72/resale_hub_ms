@@ -147,7 +147,12 @@ export default class UserService {
       }
 
       // DB Operation
-      // const result = await this.repository
+      const result = await this.repository.createProfile(
+        payload.user_id,
+        input
+      );
+      console.log(result);
+      return SuccessResponse({ message: "user profile created successfully" });
     } catch (err) {
       return ErrorResponse(500, err);
     }

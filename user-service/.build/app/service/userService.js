@@ -18,16 +18,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const response_1 = require("../utility/response");
-const userRepository_1 = require("../repository/userRepository");
 const tsyringe_1 = require("tsyringe");
+const AddressInput_1 = require("../models/zod/AddressInput");
+const LoginInput_1 = require("../models/zod/LoginInput");
 const SignupInput_1 = require("../models/zod/SignupInput");
 const UpdateInput_1 = require("../models/zod/UpdateInput");
-const LoginInput_1 = require("../models/zod/LoginInput");
-const errors_1 = require("../utility/errors");
-const password_1 = require("../utility/password");
+const userRepository_1 = require("../repository/userRepository");
 const dateHelper_1 = require("../utility/dateHelper");
+const errors_1 = require("../utility/errors");
 const notification_1 = require("../utility/notification");
+const password_1 = require("../utility/password");
+const response_1 = require("../utility/response");
 let UserService = class UserService {
     constructor(repository) {
         this.repository = repository;
@@ -124,7 +125,24 @@ let UserService = class UserService {
     // User Profile
     CreateProfile(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            return (0, response_1.SuccessResponse)({ message: "response from create user profile" });
+            try {
+                const token = event.headers.authorization;
+                const payload = yield (0, password_1.VerifyToken)(token);
+                if (!payload) {
+                    return (0, response_1.ErrorResponse)(403, "Invalid token");
+                }
+                const input = (0, errors_1.ZodErrorHandler)(event, AddressInput_1.ProfileInput);
+                if (input instanceof Error) {
+                    return (0, response_1.ErrorResponse)(400, input);
+                }
+                // DB Operation
+                const result = yield this.repository.createProfile(payload.user_id, input);
+                console.log(result);
+                return (0, response_1.SuccessResponse)({ message: "user profile created successfully" });
+            }
+            catch (err) {
+                return (0, response_1.ErrorResponse)(500, err);
+            }
         });
     }
     GetProfile(event) {
