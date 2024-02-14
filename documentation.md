@@ -132,6 +132,26 @@ export const Signup = async (event: APIGatewayProxyEventV2) => {
 
 ### Implementing Product Service using CDK Pipeline
 
+- Install ```aws-cdk``` to establish CDK pipelines and Lambda Functions to handle the microservice.
+- Then , bootstrap your CDK, i.e., deploying stacks with the AWS CDK to dedicated AWS S3 buckets and other containers to be available to AWS CloudFormation during deployment.
+  
+```bash
+cdk bootstrap aws://ACCOUNT-NUMBER/REGION
+```
+
+- To enable it, create a user in AWS in AWS IAM and set it's permission to AdministratorAccess
+- Create CLI Access Key for the user in security group. And configure the user in the Command Line.
+
+```bash
+aws configure
+```
+
+- Create the product service folder and configure CDK project inside it.
+
+```bash
+cdk init app --language=typescript
+```
+
 
 ### Deployment
 
