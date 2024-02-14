@@ -1,23 +1,24 @@
-import { ErrorResponse, SuccessResponse } from "../utility/response";
 import { APIGatewayProxyEventV2 } from "aws-lambda";
-import { UserRepository } from "../repository/userRepository";
 import { autoInjectable } from "tsyringe";
+import { ProfileInput } from "../models/zod/AddressInput";
+import { LoginInput } from "../models/zod/LoginInput";
 import { SignupInput } from "../models/zod/SignupInput";
 import { VerificationInput } from "../models/zod/UpdateInput";
-import { LoginInput } from "../models/zod/LoginInput";
-import { ZodErrorHandler } from "../utility/errors";
-import {
-  GetSalt,
-  GetHashedPassword,
-  ValidatePassword,
-  GetToken,
-  VerifyToken
-} from "../utility/password";
+import { UserRepository } from "../repository/userRepository";
 import { TimeDifference } from "../utility/dateHelper";
+import { ZodErrorHandler } from "../utility/errors";
 import {
   GenerateAccessCode,
   SendVerificationCode
 } from "../utility/notification";
+import {
+  GetHashedPassword,
+  GetSalt,
+  GetToken,
+  ValidatePassword,
+  VerifyToken
+} from "../utility/password";
+import { ErrorResponse, SuccessResponse } from "../utility/response";
 
 @autoInjectable()
 export default class UserService {
@@ -126,7 +127,6 @@ export default class UserService {
       } else {
         return ErrorResponse(403, "Verification code has expired");
       }
-
     }
 
     return SuccessResponse({ message: "user verified successfully" });
@@ -134,7 +134,23 @@ export default class UserService {
 
   // User Profile
   async CreateProfile(event: APIGatewayProxyEventV2) {
-    return SuccessResponse({ message: "response from create user profile" });
+    try {
+      const token = event.headers.authorization;
+      const payload = await VerifyToken(token);
+      if (!payload) {
+        return ErrorResponse(403, "Invalid token");
+      }
+
+      const input = ZodErrorHandler(event, ProfileInput);
+      if (input instanceof Error) {
+        return ErrorResponse(400, input);
+      }
+
+      // DB Operation
+      // const result = await this.repository
+    } catch (err) {
+      return ErrorResponse(500, err);
+    }
   }
 
   async GetProfile(event: APIGatewayProxyEventV2) {
