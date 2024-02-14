@@ -104,6 +104,53 @@ export class UserRepository extends DBOperation {
   }
 
   async getUserProfile(user_id: number) {
-    
+    const profileQuery =
+      "SELECT first_name, last_name, email, phone, user_type, verified FROM users WHERE user_id = $1;";
+    const profileValues = [user_id];
+
+    const profileResult = await this.executeQuery(profileQuery, profileValues);
+    if (profileResult.rowCount < 1) {
+      throw new Error("user profile not found");
+    }
+
+    const userProfile = profileResult.rows[0] as UserModel;
+
+    const addressQuery = "SELECT * FROM address WHERE user_id = $1;";
+    const addressValues = [user_id];
+    const addressResult = await this.executeQuery(addressQuery, addressValues);
+    if (addressResult.rowCount > 0) {
+      userProfile.address = addressResult.rows as AddressModel[];
+      return userProfile;
+    }
+
+    throw new Error("user profile not found");
+  }
+
+  async editProfile(
+    user_id: number,
+    {
+      firstName,
+      lastName,
+      address: { addressLine1, addressLine2, city, post_code, country, id },
+      userType
+    }: ProfileInputType
+  ) {
+    const addressQuery =
+      "UPDATE address SET address_line1=$1, address_line2=$2, city=$3, post_code=$4, country=$5 WHERE user_id=$6 RETURNING *;";
+    const addressValues = [
+      addressLine1,
+      addressLine2,
+      city,
+      post_code,
+      country,
+      id
+    ];
+
+    const addressResult = await this.executeQuery(addressQuery, addressValues);
+    if (addressResult.rowCount > 0) {
+      return true;
+    }
+
+    throw new Error("error while updating profile");
   }
 }

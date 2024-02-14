@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const AddressInput = z.object({
+  id: z.number(),
   addressLine1: z.string().min(1).max(255),
   addressLine2: z.string().min(1).max(255),
   city: z.string().min(1).max(100),

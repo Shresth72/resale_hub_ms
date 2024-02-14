@@ -152,18 +152,51 @@ export default class UserService {
         input
       );
       console.log(result);
-      return SuccessResponse({ message: "user profile created successfully" });
+      return SuccessResponse({
+        message: "user profile created successfully",
+        result
+      });
     } catch (err) {
       return ErrorResponse(500, err);
     }
   }
 
   async GetProfile(event: APIGatewayProxyEventV2) {
-    return SuccessResponse({ message: "response from get user profile" });
+    const token = event.headers.authorization;
+    const payload = await VerifyToken(token);
+    if (!payload) {
+      return ErrorResponse(403, "Invalid token");
+    }
+
+    const result = await this.repository.getUserProfile(payload.user_id);
+
+    return SuccessResponse({
+      message: "user profile fetched successfully",
+      result
+    });
   }
 
   async UpdateProfile(event: APIGatewayProxyEventV2) {
-    return SuccessResponse({ message: "response from update user profile" });
+    try {
+      const token = event.headers.authorization;
+      const payload = await VerifyToken(token);
+      if (!payload) {
+        return ErrorResponse(403, "Invalid token");
+      }
+
+      const input = ZodErrorHandler(event, ProfileInput);
+      if (input instanceof Error) {
+        return ErrorResponse(400, input);
+      }
+
+      // DB Operation
+      await this.repository.editProfile(payload.user_id, input);
+      return SuccessResponse({
+        message: "user profile updated successfully"
+      });
+    } catch (err) {
+      return ErrorResponse(500, err);
+    }
   }
 
   // User Cart

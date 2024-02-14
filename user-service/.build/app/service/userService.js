@@ -138,7 +138,10 @@ let UserService = class UserService {
                 // DB Operation
                 const result = yield this.repository.createProfile(payload.user_id, input);
                 console.log(result);
-                return (0, response_1.SuccessResponse)({ message: "user profile created successfully" });
+                return (0, response_1.SuccessResponse)({
+                    message: "user profile created successfully",
+                    result
+                });
             }
             catch (err) {
                 return (0, response_1.ErrorResponse)(500, err);
@@ -147,12 +150,39 @@ let UserService = class UserService {
     }
     GetProfile(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            return (0, response_1.SuccessResponse)({ message: "response from get user profile" });
+            const token = event.headers.authorization;
+            const payload = yield (0, password_1.VerifyToken)(token);
+            if (!payload) {
+                return (0, response_1.ErrorResponse)(403, "Invalid token");
+            }
+            const result = yield this.repository.getUserProfile(payload.user_id);
+            return (0, response_1.SuccessResponse)({
+                message: "user profile fetched successfully",
+                result
+            });
         });
     }
     UpdateProfile(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            return (0, response_1.SuccessResponse)({ message: "response from update user profile" });
+            try {
+                const token = event.headers.authorization;
+                const payload = yield (0, password_1.VerifyToken)(token);
+                if (!payload) {
+                    return (0, response_1.ErrorResponse)(403, "Invalid token");
+                }
+                const input = (0, errors_1.ZodErrorHandler)(event, AddressInput_1.ProfileInput);
+                if (input instanceof Error) {
+                    return (0, response_1.ErrorResponse)(400, input);
+                }
+                // DB Operation
+                yield this.repository.editProfile(payload.user_id, input);
+                return (0, response_1.SuccessResponse)({
+                    message: "user profile updated successfully"
+                });
+            }
+            catch (err) {
+                return (0, response_1.ErrorResponse)(500, err);
+            }
         });
     }
     // User Cart
