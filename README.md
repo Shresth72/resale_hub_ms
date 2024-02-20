@@ -182,13 +182,21 @@ cdk init app --language=typescript
 - This also ensures that the web app cannot read the files on its own from the private Bucket and only upload via a signed URL ensuring security.
 - To read image from S3, Cloud Front Distribution will distribute the files along with limited permissions to public.
 
-### Setting up a CloudFront Distribution
+### Creating Bucket Upload Lambda Function & S3 Bucket Stack
 
-- Select the bucket to be accessed
-- Setup Origin Access Control for restricting Bucket read access to only CloudFront.
-- The distribution should only be accessible from HTTP and HTTPs ports and only GET method allowed for read only.
+- The Image Uploader Service requests the S3 to fetch it the signed URL for uploading.
+- The bucket name and other environments are set using a IAC based S3 Bucket Stack that creates a bucket automatically in the Root ProductService Stack of the CDK
+- It injects the injects the Bucket configurations onto all the lambda services but grants Write permission to the Image Uploader CloudFront only!
 
-- The S3 bucker policy needs to be updated for setting up the distribution configuration for CloudFront access only :
+### Granting CloudFront Stack permission to read from S3
+
+- Create a distribution in CloudFront that connects to the newly created Bucket and follow the same steps:
+
+  - Select the bucket to be accessed
+  - Setup Origin Access Control for restricting Bucket read access to only CloudFront.
+  - The distribution should only be accessible from HTTP and HTTPs ports and only GET method allowed for read only.
+- Since, the S3 bucket was created automatically, there is an existing policy that restricts the Product Service Stack in the CloudFront from access to the bucket.
+- So, append new policy to grant access to the existing permissions
 
 ```json
 {
@@ -214,5 +222,3 @@ cdk init app --language=typescript
 ```
 
 - The Distribution Domain Name, and the Object Key Name in the Bucket can be used to access the resources publicly.
-
-### Creating Bucket Upload Lambda Function

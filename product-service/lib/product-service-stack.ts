@@ -1,20 +1,25 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { ApiGatewayStack } from "./api_gateway-stack";
+import { S3BucketStack } from "./s3bucket-stack";
 import { ServiceStack } from "./service-stack";
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Lambda function Stack for the product service
+    const { bucket } = new S3BucketStack(this, "productsImages");
+
+    // The bucket is passed to the every lambda fn in the ServiceStack
     const { productService, categoryService, dealsService, imageService } =
       new ServiceStack(this, "ProductService", {
-        bucket: "BUCKET_ARN"
+        bucket: bucket.bucketName
       });
 
-    // Api Gateway Stack
-    new ApiGatewayStack(this, "ApiGateway", {
+    // But only the imageService is granted write access to the bucket
+    bucket.grantReadWrite(imageService);
+
+    new ApiGatewayStack(this, "ProductApiGayeway", {
       productService,
       categoryService,
       dealsService,

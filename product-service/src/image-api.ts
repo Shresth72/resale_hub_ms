@@ -1,7 +1,6 @@
 import { APIGatewayEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 import { S3 } from "aws-sdk";
 import { v4 as uuid } from "uuid";
-import { bucket_name } from "./utility/config";
 import { ErrorResponse } from "./utility/response";
 
 const s3Client = new S3();
@@ -21,7 +20,7 @@ export const handler = async (
 
     // create a S3Params
     const s3Params = {
-      Bucket: bucket_name,
+      Bucket: process.env.BUCKET_NAME, // env is set in the CDK stack in the service-stack.ts
       Key: fileName,
       ContentType: `image/${fileType}`
     };
