@@ -3,7 +3,7 @@
 *.d.ts
 node_modules
 
-/src/utility/db-connection.ts
+/src/utility/db.ts
 
 # CDK asset staging directory
 .cdk.staging

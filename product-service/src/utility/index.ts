@@ -1,4 +1,4 @@
-import ConnectDB from "./db-connection";
+import ConnectDB from "./db";
 
 ConnectDB()
   .then(() => {
