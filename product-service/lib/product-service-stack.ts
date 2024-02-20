@@ -1,16 +1,27 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+import * as cdk from "aws-cdk-lib";
+import { Construct } from "constructs";
+import { ApiGatewayStack } from "./api_gateway-stack";
+import { ServiceStack } from "./service-stack";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    // Lambda function Stack for the product service
+    const { productService, categoryService, dealsService } = new ServiceStack(
+      this,
+      "ProductService",
+      {
+        bucket: "BUCKET_ARN"
+      }
+    );
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'ProductServiceQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    // Api Gateway Stack
+    new ApiGatewayStack(this, "ApiGateway", {
+      productService,
+      categoryService,
+      dealsService
+    });
   }
 }

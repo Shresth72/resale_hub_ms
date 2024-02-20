@@ -1,14 +1,13 @@
 # PROJECT DOCUMENTATION
 
-**System Design**
--
+## **System Design**
 
 - Functional requirements
 - Non Functional requirements
 - Data storage requirements
 
 ### Functional Requirements
-  
+
 - User Sign-up / Login functionality
 - User verification with OTP / SMS
 - User can become seller / buyer
@@ -38,8 +37,7 @@
 
 <br/><br/>
 
-**Project Architecture**
--
+## **Project Architecture**
 
 ### Backend and Frontend Design
 
@@ -77,22 +75,22 @@
 
 <br/><br/>
 
-**Implementing User Service**
--
+## **Implementing User Service**
 
 - Install AWS and Serverless cli globally
-- Setup a 'AWS - Node.js - HTTP API' template using command:  ```serverless``` and setup user-service
-- Install serverless-offline and serverless-typescript to run on local system using command in user-service: 
-  
+- Setup a 'AWS - Node.js - HTTP API' template using command: `serverless` and setup user-service
+- Install serverless-offline and serverless-typescript to run on local system using command in user-service:
+
 ```bash
 serverless plugin install --name serverless-offline
 
 serverless plugin install --name serverless-plugin-typescript
-``` 
+```
 
 - Now, we can create routes by using route handlers and binding them to the serverless.yaml file functions. So, on spinning up the serverless server, when we request for a specific route, it calls that binded route handler function and returns the results according to the method specified.
 
-```serverless.yml```
+`serverless.yml`
+
 ```yml
 # --- Rest of the code --- #
 functions:
@@ -104,7 +102,8 @@ functions:
           method: get
 ```
 
-```handler.ts```
+`handler.ts`
+
 ```ts
 import { APIGatewayProxyEventV2 } from "aws-lambda";
 
@@ -132,9 +131,9 @@ export const Signup = async (event: APIGatewayProxyEventV2) => {
 
 ### Implementing Product Service using CDK Pipeline
 
-- Install ```aws-cdk``` to establish CDK pipelines and Lambda Functions to handle the microservice.
+- Install `aws-cdk` to establish CDK pipelines and Lambda Functions to handle the microservice.
 - Then , bootstrap your CDK, i.e., deploying stacks with the AWS CDK to dedicated AWS S3 buckets and other containers to be available to AWS CloudFormation during deployment.
-  
+
 ```bash
 cdk bootstrap aws://ACCOUNT-NUMBER/REGION
 ```
@@ -152,11 +151,33 @@ aws configure
 cdk init app --language=typescript
 ```
 
+- In the product service, that is based on the AWS CDK architecture, we have to create lambda handler functions inorder to handle the API Gateways that we have to define for each api route with each of their methods.
+- The lambda functions takes care of the product service stack
+
+### Running the application
+
+- Inorder to run the cdk, we have to bootstrap it first with docker and your aws account
+
+```bash
+cdk bootstrap
+```
+
+- Next, use
+
+```bash
+cdk synth
+```
+
+- Deploy it on the AWS cloud formation
+
+```bash
+cdk deploy --verbose --trace
+```
 
 ### Deployment
 
 - Set new rules an parameters in the serverless.yml file
 - Setup a new user in AWS IAM Portal, set Access Key and Administrator Access.
-- Now configure AWS access key and secret access key with ```aws configure```
+- Now configure AWS access key and secret access key with `aws configure`
 - Deploy using serverless!
-
+```
