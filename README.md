@@ -144,10 +144,10 @@ export const Signup = async (event: APIGatewayProxyEventV2) => {
 
 ## Implementing Product Service using AWS CDK
 
+<img src="./public/images/cdk.png" alt="database design"  style="width:800px;" />
+
 - Install `aws-cdk` to establish CDK pipelines and Lambda Functions to handle the microservice.
 - Then , bootstrap your CDK, i.e., deploying stacks with the AWS CDK to dedicated AWS S3 buckets and other containers to be available to AWS CloudFormation during deployment.
-
-<img src="./public/images/cdk.png" alt="database design"  style="width:800px;" />
 
 ```bash
 cdk bootstrap aws://ACCOUNT-NUMBER/REGION
@@ -168,3 +168,51 @@ cdk init app --language=typescript
 
 - In the product service, that is based on the AWS CDK architecture, lambda handler functions are defined to handle the API Gateways that are defied for API route with each of their methods.
 - The lambda functions takes care of the product service stack, and run all the services and routes inside the stack!
+
+### Uploading Images from Product Service in Secure Way
+
+- Exposing image directly from nodeJs uploads to public poses security risks and potential risk of running out of storage as it will grow faster.
+- Hence, using a Binary Large Object Storage like S3 is the way to go!
+
+<img src="./public/images/s3.png" alt="database design"  style="width:800px;" />
+
+- Only a specific Lambda function has access to the Private S3 Bucket.
+- The Web App asks for a signed URL to upload the files, the lambda function will create the signed URL with certain permissions.
+- After the signed URL is created, the web app can no longer interact with the product service and can directly upload to the S3 bucket.
+- This also ensures that the web app cannot read the files on its own from the private Bucket and only upload via a signed URL ensuring security.
+- To read image from S3, Cloud Front Distribution will distribute the files along with limited permissions to public.
+
+### Setting up a CloudFront Distribution
+
+- Select the bucket to be accessed
+- Setup Origin Access Control for restricting Bucket read access to only CloudFront.
+- The distribution should only be accessible from HTTP and HTTPs ports and only GET method allowed for read only.
+
+- The S3 bucker policy needs to be updated for setting up the distribution configuration for CloudFront access only :
+
+```json
+{
+  "Version": "2008-10-17",
+  "Id": "PolicyForCloudFrontPrivateContent",
+  "Statement": [
+    {
+      "Sid": "AllowCloudFrontServicePrincipal",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::BUCKET_NAME/*",
+      "Condition": {
+        "StringEquals": {
+          "AWS:SourceArn": "CLOUDFRONT_ARN"
+        }
+      }
+    }
+  ]
+}
+```
+
+- The Distribution Domain Name, and the Object Key Name in the Bucket can be used to access the resources publicly.
+
+### Creating Bucket Upload Lambda Function
