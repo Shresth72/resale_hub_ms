@@ -27,8 +27,8 @@ const formatResponse = (statusCode: number, message: string, data: unknown) => {
   }
 };
 
-export const SuccessResponse = (data: object) => {
-  return formatResponse(200, "success", data);
+export const SuccessResponse = (data: object, status_code?: number) => {
+  return formatResponse(status_code || 200, "success", data);
 };
 
 export const ErrorResponse = (code = 1000, error: unknown) => {

@@ -1,12 +1,16 @@
+import { APIGatewayEvent } from "aws-lambda";
 import { ZodError, ZodObject, ZodRawShape } from "zod";
-import { APIGatewayProxyEventV2 } from "aws-lambda";
 
 export const ZodErrorHandler = <T extends ZodRawShape>(
-  event: APIGatewayProxyEventV2,
+  event: APIGatewayEvent,
   parser: ZodObject<T>
 ) => {
   try {
-    const input = parser.parse(JSON.parse(event.body || ""));
+    if (!event.body) {
+      throw new Error("Invalid request body");
+    }
+
+    const input = parser.parse(JSON.parse(event.body));
     return input;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -14,5 +18,5 @@ export const ZodErrorHandler = <T extends ZodRawShape>(
       return error;
     }
   }
-  return null;
+  return new Error("Invalid request body");
 };

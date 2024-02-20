@@ -32,7 +32,7 @@ export class ApiGatewayStack extends Construct {
     const apigw = new aws_apigateway.RestApi(this, `${serviceName}-ApiGtw`);
 
     this.createEndPoints(productService, apigw, {
-      name: "products",
+      name: "product",
       methods: ["GET", "POST"],
       child: {
         name: "{id}",
