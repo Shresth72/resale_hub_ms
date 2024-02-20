@@ -1,3 +1,4 @@
+# Test locally using AWS Service Application Model (SAM) and AWS CDK
 test_lambda:
 	sam local invoke $(fn)Lambda --no-event -t ./cdk.out/ProductServiceStack.template.json
 
