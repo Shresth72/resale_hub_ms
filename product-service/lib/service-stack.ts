@@ -8,7 +8,7 @@ import { Construct } from "constructs";
 import { join } from "path";
 
 interface ServiceProps {
-  bucket?: any;
+  bucket: string;
 }
 
 // Lambda function Stack for the product service
@@ -16,6 +16,7 @@ export class ServiceStack extends Construct {
   public readonly productService: NodejsFunction;
   public readonly categoryService: NodejsFunction;
   public readonly dealsService: NodejsFunction;
+  public readonly imageService: NodejsFunction;
 
   constructor(scope: Construct, id: string, props: ServiceProps) {
     super(scope, id);
@@ -25,9 +26,9 @@ export class ServiceStack extends Construct {
         externalModules: ["aws-sdk"]
       },
       environment: {
-        BUCKET_NAME: "BUCKET_ARN"
+        BUCKET_NAME: props.bucket
       },
-      runtime: Runtime.NODEJS_16_X,
+      runtime: Runtime.NODEJS_20_X,
       timeout: Duration.seconds(10)
     };
 
@@ -43,6 +44,11 @@ export class ServiceStack extends Construct {
 
     this.dealsService = new NodejsFunction(this, "dealsLambda", {
       entry: join(__dirname, "/../src/deals-api.ts"),
+      ...nodeJsFunctionProps
+    });
+
+    this.imageService = new NodejsFunction(this, "imageUploadLambda", {
+      entry: join(__dirname, "/../src/image-api.ts"),
       ...nodeJsFunctionProps
     });
   }
