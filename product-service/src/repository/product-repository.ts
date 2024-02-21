@@ -1,5 +1,5 @@
-import products, { ProductDoc } from "../models/product-model";
-import { NewProductInputType, ProductInputType } from "../types/product-input";
+import { ProductDoc, products } from "../models";
+import { ProductInputType } from "../types/product-input";
 
 export class ProductRepository {
   constructor() {}
@@ -11,7 +11,7 @@ export class ProductRepository {
     image_url,
     price,
     availability
-  }: NewProductInputType) {
+  }: ProductInputType): Promise<ProductDoc> {
     // check if product already exists
     const product = await products.findOne({ name });
     if (product) {
@@ -48,7 +48,7 @@ export class ProductRepository {
       image_url,
       price,
       availability
-    }: NewProductInputType
+    }: ProductInputType
   ) {
     let existingProduct = (await products.findById(id)) as ProductDoc;
     if (!existingProduct) {
@@ -66,6 +66,9 @@ export class ProductRepository {
   }
 
   async deleteProduct(id: string) {
-    return products.deleteOne({ _id: id });
+    const { category_id } = (await products.findById(id)) as ProductDoc;
+    const deleteResult = products.deleteOne({ _id: id });
+
+    return { category_id, deleteResult };
   }
 }

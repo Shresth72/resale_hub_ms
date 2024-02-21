@@ -1,8 +1,9 @@
 import { APIGatewayEvent } from "aws-lambda";
 import { ProductRepository } from "../repository/product-repository";
-import { NewProductInput, ProductInput } from "../types/product-input";
+import { ProductInput } from "../types/product-input";
 import { ZodErrorHandler } from "../utility/errors";
 import { ErrorResponse, SuccessResponse } from "../utility/response";
+import { CategoryRepository } from "./../repository/category-repository";
 
 export class ProductService {
   _repository: ProductRepository;
@@ -13,12 +14,17 @@ export class ProductService {
 
   async createProduct(event: APIGatewayEvent) {
     try {
-      const input = ZodErrorHandler(event, NewProductInput);
+      const input = ZodErrorHandler(event, ProductInput);
       if (input instanceof Error) {
         return ErrorResponse(400, input);
       }
 
       const data = await this._repository.createProduct(input);
+
+      await new CategoryRepository().addItem({
+        id: input.category_id,
+        products: [data._id]
+      });
 
       return SuccessResponse(data, 201);
     } catch (error) {
@@ -30,7 +36,7 @@ export class ProductService {
     try {
       const data = await this._repository.getAllProducts();
       if (!data) {
-        return SuccessResponse({}, 204);
+        return SuccessResponse({ message: "No products found" }, 204);
       }
 
       return SuccessResponse(data);
@@ -64,7 +70,7 @@ export class ProductService {
         return ErrorResponse(400, "product id is required");
       }
 
-      const input = ZodErrorHandler(event, NewProductInput);
+      const input = ZodErrorHandler(event, ProductInput);
       if (input instanceof Error) {
         return ErrorResponse(400, input);
       }
@@ -78,13 +84,19 @@ export class ProductService {
 
   async deleteProduct(event: APIGatewayEvent) {
     try {
-      const id = event.pathParameters?.id;
-      if (!id) {
+      const product_id = event.pathParameters?.id;
+      if (!product_id) {
         return ErrorResponse(400, "product id is required");
       }
 
-      const data = await this._repository.deleteProduct(id);
-      return SuccessResponse(data);
+      const { category_id, deleteResult } =
+        await this._repository.deleteProduct(product_id);
+      await new CategoryRepository().removeItem({
+        id: category_id,
+        products: [product_id]
+      });
+
+      return SuccessResponse(deleteResult);
     } catch (error) {
       return ErrorResponse(500, error);
     }
