@@ -3,7 +3,7 @@
     "driver": "pg",
     "user": "user_service",
     "password": "rds_password",
-    "host": "user-service.endpoint.ap-southeast-1.rds.amazonaws.com",
+    "host": "user-service.endpoint_.ap-southeast-1.rds.amazonaws.com",
     "database": "user_service",
     "port": 5432
   }
