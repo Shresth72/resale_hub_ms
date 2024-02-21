@@ -17,6 +17,7 @@ export class ServiceStack extends Construct {
   public readonly categoryService: NodejsFunction;
   public readonly dealsService: NodejsFunction;
   public readonly imageService: NodejsFunction;
+  public readonly queueService: NodejsFunction;
 
   constructor(scope: Construct, id: string, props: ServiceProps) {
     super(scope, id);
@@ -49,6 +50,11 @@ export class ServiceStack extends Construct {
 
     this.imageService = new NodejsFunction(this, "imageUploadLambda", {
       entry: join(__dirname, "/../src/image-api.ts"),
+      ...nodeJsFunctionProps
+    });
+
+    this.queueService = new NodejsFunction(this, "queueLambda", {
+      entry: join(__dirname, "/../src/message-queue.ts"),
       ...nodeJsFunctionProps
     });
   }

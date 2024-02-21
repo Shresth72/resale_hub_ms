@@ -11,10 +11,15 @@ export class ProductServiceStack extends cdk.Stack {
     const { bucket } = new S3BucketStack(this, "productsImages");
 
     // The bucket is passed to the every lambda fn in the ServiceStack
-    const { productService, categoryService, dealsService, imageService } =
-      new ServiceStack(this, "ProductService", {
-        bucket: bucket.bucketName
-      });
+    const {
+      productService,
+      categoryService,
+      dealsService,
+      imageService,
+      queueService
+    } = new ServiceStack(this, "ProductService", {
+      bucket: bucket.bucketName
+    });
 
     // But only the imageService is granted write access to the bucket
     bucket.grantReadWrite(imageService);
@@ -23,7 +28,8 @@ export class ProductServiceStack extends cdk.Stack {
       productService,
       categoryService,
       dealsService,
-      imageService
+      imageService,
+      queueService
     });
   }
 }

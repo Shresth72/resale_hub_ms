@@ -12,6 +12,7 @@ interface ApiGatewayStackProps {
   categoryService: IFunction;
   dealsService: IFunction;
   imageService: IFunction;
+  queueService: IFunction;
 }
 
 interface ResourceType {
@@ -32,7 +33,8 @@ export class ApiGatewayStack extends Construct {
       productService,
       categoryService,
       dealsService,
-      imageService
+      imageService,
+      queueService
     }: ApiGatewayStackProps
   ) {
     const apigw = new aws_apigateway.RestApi(this, `${serviceName}-ApiGtw`);
@@ -64,9 +66,15 @@ export class ApiGatewayStack extends Construct {
       }
     });
 
+    // To upload image to the signed URL use Put method
     this.createEndPoints(imageService, apigw, {
       name: "uploader",
       methods: ["GET"]
+    });
+
+    this.createEndPoints(queueService, apigw, {
+      name: "products-queue",
+      methods: ["POST"]
     });
   }
 

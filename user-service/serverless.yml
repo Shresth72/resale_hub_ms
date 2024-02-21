@@ -1,7 +1,7 @@
 org: shresth72
 app: user-service
 service: user-service
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 provider:
   name: aws
@@ -11,6 +11,12 @@ provider:
   region: "us-east-1"
   httpApi:
     cors: true
+
+custom:
+  stage: "dev"
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4002
 
 functions:
   signup:
@@ -48,6 +54,7 @@ functions:
           method: put
   cart:
     handler: app/handler.Cart
+    timeout: 15
     events:
       - httpApi:
           path: /cart
@@ -56,8 +63,11 @@ functions:
           path: /cart
           method: get
       - httpApi:
-          path: /cart
+          path: /cart/{id}
           method: put
+      - httpApi:
+          path: /cart/{id}
+          method: delete
   payment:
     handler: app/handler.Payment
     events:

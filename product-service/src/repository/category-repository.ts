@@ -92,7 +92,7 @@ export class CategoryRepository {
   }
 
   async deleteCategory(id: string) {
-    return await categories.deleteOne({ id });
+    return await categories.deleteOne({ _id: id });
   }
 
   async addItem({ id, products }: AddItemInputType) {

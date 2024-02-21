@@ -2,10 +2,10 @@ import { Client } from "pg";
 
 export const DBClient = async () => {
   return new Client({
-    host: "127.0.0.1",
-    user: "root",
+    host: "user-service.endpoint.ap-southeast-1.rds.amazonaws.com",
+    user: "user_service",
     database: "user_service",
-    password: "root",
+    password: "rds_password",
     port: 8001
   });
 };

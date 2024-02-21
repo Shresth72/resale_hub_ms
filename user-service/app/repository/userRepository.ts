@@ -1,5 +1,4 @@
 import { UserModel } from "../models/UserModel";
-import { DBClient } from "../utility/databaseClient";
 import { AddressModel } from "./../models/AddressModel";
 import { ProfileInputType } from "./../models/zod/AddressInput";
 import { DBOperation } from "./dbOperation";
@@ -19,6 +18,7 @@ export class UserRepository extends DBOperation {
     if (result.rowCount > 0) {
       return result.rows[0] as UserModel;
     }
+    throw new Error("error while creating user");
   }
 
   async findAccount(email: string) {

@@ -1,10 +1,10 @@
 {
   "dev": {
     "driver": "pg",
-    "user": "root",
-    "password": "root",
-    "host": "127.0.0.1",
+    "user": "user_service",
+    "password": "rds_password",
+    "host": "user-service.endpoint.ap-southeast-1.rds.amazonaws.com",
     "database": "user_service",
-    "port": 8001
+    "port": 5432
   }
 }

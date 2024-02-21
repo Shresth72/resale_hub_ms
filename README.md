@@ -142,6 +142,8 @@ export const Signup = async (event: APIGatewayProxyEventV2) => {
 - Now configure AWS access key and secret access key with `aws configure`
 - Deploy using serverless!
 
+<br/><br/>
+
 ## Implementing Product Service using AWS CDK
 
 <img src="./public/images/cdk.png" alt="database design"  style="width:800px;" />
@@ -195,6 +197,7 @@ cdk init app --language=typescript
   - Select the bucket to be accessed
   - Setup Origin Access Control for restricting Bucket read access to only CloudFront.
   - The distribution should only be accessible from HTTP and HTTPs ports and only GET method allowed for read only.
+
 - Since, the S3 bucket was created automatically, there is an existing policy that restricts the Product Service Stack in the CloudFront from access to the bucket.
 - So, append new policy to grant access to the existing permissions
 
@@ -222,3 +225,66 @@ cdk init app --language=typescript
 ```
 
 - The Distribution Domain Name, and the Object Key Name in the Bucket can be used to access the resources publicly.
+
+<br/><br/>
+
+## Implementing Communication between the User, Product and Transaction services to enable Cart
+
+Microservices communication should be
+
+- Loosely Coupled
+- Less Dependency
+- CQRS
+- Segregation of Read and Write Use-cases
+
+<img src="./public/images/comm.png" alt="database design"  style="width:800px;" />
+
+- The user service only needs to publish a create order event for the Transaction service to validate the request and create order. The user service does not have to interact with the transaction data
+- And the user can simply pull data for cart from the Product Service and does not have to interact with the product data.
+
+<br/><br/>
+
+## Managing Deployment Database for User Service
+
+Deployment Database can be implemented in two ways
+
+- **Managed RDS**
+
+  - Operational Excellence
+    - Monitoring and alert management
+    - Centralize backup
+    - Log exports for longer retention
+    - Event Management
+  - Security
+    - IAM
+    - Security Group
+    - Secret Manager
+    - SSL enforcement
+  - Performance Efficiency
+    - Read replicas
+    - Auto scaling
+    - Serverless architecture
+  - Cost
+    - Standard cost tier as per AWS
+    - Assigned rest of resource COST
+
+- **Self Managed RDS**
+  - Complete control of EC2 Machine
+    - Setup your own per business needs
+  - Security self management
+    - IAM
+    - Security group
+    - Secret manager
+    - SSL enforcement
+  - Performance Efficiency [self management]
+    - Read replicas / configure
+    - Auto scaling / configure
+  - Cost
+    - EC2 running hours
+    - Pay as you added resources
+
+### Setting up AWS RDS Database
+
+- Create a standard Postgres RDS on EC2 Instance
+- Keep it private and setup Security Group
+- Setup the RDS database configurations for connections

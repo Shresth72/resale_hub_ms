@@ -1,6 +1,7 @@
 import { APIGatewayEvent } from "aws-lambda";
 import { ProductRepository } from "../repository/product-repository";
 import { ProductInput } from "../types/product-input";
+import { ServiceInput } from "../types/service-input";
 import { ZodErrorHandler } from "../utility/errors";
 import { ErrorResponse, SuccessResponse } from "../utility/response";
 import { CategoryRepository } from "./../repository/category-repository";
@@ -100,5 +101,24 @@ export class ProductService {
     } catch (error) {
       return ErrorResponse(500, error);
     }
+  }
+
+  // HTTP calls -> RPC Queues
+  async handleQueueOperation(event: APIGatewayEvent) {
+    // TODO: Implement RPC Queue operations 
+    const input = ZodErrorHandler(event, ServiceInput); // GET_PRODUCT Action
+    if (input instanceof Error) {
+      return ErrorResponse(400, input);
+    }
+
+    const { _id, name, price, image_url } =
+      await this._repository.getProductById(input.productId);
+
+    return SuccessResponse({
+      product_id: _id,
+      name,
+      price,
+      image_url
+    });
   }
 }

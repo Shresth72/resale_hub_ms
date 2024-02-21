@@ -199,19 +199,6 @@ export default class UserService {
     }
   }
 
-  // User Cart
-  async CreateCart(event: APIGatewayProxyEventV2) {
-    return SuccessResponse({ message: "response from create user cart" });
-  }
-
-  async GetCart(event: APIGatewayProxyEventV2) {
-    return SuccessResponse({ message: "response from get user cart" });
-  }
-
-  async UpdateCart(event: APIGatewayProxyEventV2) {
-    return SuccessResponse({ message: "response from update user cart" });
-  }
-
   // User Payment
   async CreatePaymentMethod(event: APIGatewayProxyEventV2) {
     return SuccessResponse({ message: "response from create user payment" });

@@ -28,6 +28,9 @@ export class CategoryService {
   async getCategories(event: APIGatewayEvent) {
     try {
       const type = event.queryStringParameters?.type;
+      const offset = Number(event.queryStringParameters?.offset);
+      const perPage = Number(event.queryStringParameters?.perPage);
+
       if (type === "top") {
         const data = await this._repository.getTopCategories();
         if (!data) {
@@ -36,7 +39,7 @@ export class CategoryService {
         return SuccessResponse(data);
       }
 
-      const data = await this._repository.getAllCategories();
+      const data = await this._repository.getAllCategories(offset, perPage);
       if (!data) {
         return SuccessResponse({ message: "No categories found" }, 204);
       }
@@ -49,12 +52,15 @@ export class CategoryService {
 
   async getCategory(event: APIGatewayEvent) {
     try {
+      const offset = Number(event.queryStringParameters?.offset);
+      const perPage = Number(event.queryStringParameters?.perPage);
+
       const id = event.pathParameters?.id;
       if (!id) {
         return ErrorResponse(400, "category id is required");
       }
 
-      const data = await this._repository.getCategoryById(id);
+      const data = await this._repository.getCategoryById(id, offset, perPage);
       if (!data) {
         return ErrorResponse(404, "category not found");
       }
