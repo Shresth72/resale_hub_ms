@@ -3,13 +3,15 @@ import { z } from "zod";
 export const CategoryInput = z.object({
   name: z.string().min(3).max(128),
   parentId: z.string().optional(),
-  displayOrder: z.number()
-  //   imageUrl: z.string()
+  displayOrder: z.number(),
+  imageUrl: z.string()
 });
 
 export const NewCategoryInput = z.object({
   name: z.string().min(3).max(128),
-  parentId: z.string().optional()
+  parentId: z.string().optional(),
+  imageUrl: z.string(),
+  products: z.array(z.string())
 });
 
 export const AddItemInput = z.object({

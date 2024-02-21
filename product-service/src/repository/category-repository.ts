@@ -8,12 +8,18 @@ import {
 export class CategoryRepository {
   constructor() {}
 
-  async createCategory({ name, parentId }: NewCategoryInputType) {
+  async createCategory({
+    name,
+    parentId,
+    imageUrl,
+    products
+  }: NewCategoryInputType) {
     const newCategory = await categories.create({
       name,
       parentId,
-      products: [],
-      subCategories: []
+      products: products || [],
+      subCategories: [],
+      imageUrl
     });
 
     if (parentId) {
@@ -68,7 +74,7 @@ export class CategoryRepository {
 
   async updateCategory(
     id: string,
-    { name, displayOrder, parentId }: CategoryInputType
+    { name, displayOrder, parentId, imageUrl }: CategoryInputType
   ) {
     let category = (await categories.findById(id)) as CategoryDoc;
     if (!category) {
@@ -77,6 +83,7 @@ export class CategoryRepository {
 
     category.name = name;
     category.displayOrder = displayOrder;
+    category.imageUrl = imageUrl;
     if (parentId) {
       category.parentId = parentId;
     }
@@ -85,7 +92,7 @@ export class CategoryRepository {
   }
 
   async deleteCategory(id: string) {
-    return await categories.deleteOne({ _id: id });
+    return await categories.deleteOne({ id });
   }
 
   async addItem({ id, products }: AddItemInputType) {

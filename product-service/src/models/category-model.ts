@@ -7,6 +7,7 @@ type CategoryModel = {
   subCategories: CategoryDoc[];
   products: string[];
   displayOrder: number;
+  imageUrl: string;
 };
 
 export type CategoryDoc = mongoose.Document & CategoryModel;
@@ -31,7 +32,8 @@ const categorySchema = new mongoose.Schema(
         ref: "products"
       }
     ],
-    displayOrder: { type: Number, default: 1 }
+    displayOrder: { type: Number, default: 1 },
+    imageUrl: String
   },
   {
     toJSON: {
@@ -45,8 +47,6 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
-const categories =
-  mongoose.models.categories ||
-  mongoose.model<CategoryDoc>("category", categorySchema);
+const categories = mongoose.model<CategoryDoc>("categories", categorySchema);
 
 export { categories };
