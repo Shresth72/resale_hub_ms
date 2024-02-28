@@ -56,6 +56,10 @@ export const Cart = async (event: APIGatewayProxyEventV2) => {
   }
 };
 
+export const CollectPayment = async (event: APIGatewayProxyEventV2) => {
+  return cartService.CollectPayment(event);
+};
+
 export const Payment = async (event: APIGatewayProxyEventV2) => {
   const httpMethod = event.requestContext.http.method.toLowerCase();
 

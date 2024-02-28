@@ -43,7 +43,19 @@ export class CartRepository extends DBOperation {
     return false;
   }
 
-  async findCartItems(userId: number) {}
+  async findCartItems(userId: number) {
+    const queryString = `SELECT 
+        ci.cart_id, ci.item_id, ci.product_id, ci.name, ci.price, ci.item_qty, ci.image_url, ci.created_at 
+        FROM shopping_carts sc INNER JOIN cart_items ci ON sc.cart_id=ci.cart_id WHERE sc.user_id=$1`;
+
+    const values = [userId];
+    const result = await this.executeQuery(queryString, values);
+
+    if (result.rowCount > 0) {
+      return result.rows as CartItemModel[];
+    }
+    return [];
+  }
 
   async findCartItemsByCartId(cartId: number) {
     const queryString =
@@ -76,7 +88,17 @@ export class CartRepository extends DBOperation {
     throw new Error("cart item not created");
   }
 
-  async updateCartItemById(itemId: number, qty: number) {}
+  async updateCartItemById(itemId: number, qty: number) {
+    const queryString =
+      "UPDATE cart_items SET item_qty=$1 WHERE item_id=$2 RETURNING *";
+    const values = [qty, itemId];
+    const result = await this.executeQuery(queryString, values);
+
+    if (result.rowCount > 0) {
+      return result.rows[0] as CartItemModel;
+    }
+    throw new Error("cart item not updated");
+  }
 
   async updateCartItemByProductId(productId: string, qty: number) {
     const queryString =
@@ -90,5 +112,14 @@ export class CartRepository extends DBOperation {
     throw new Error("cart item not updated");
   }
 
-  async deleteCartItem(id: number) {}
+  async deleteCartItem(id: number) {
+    const queryString = "DELETE FROM cart_items WHERE item_id=$1";
+    const values = [id];
+    const result = await this.executeQuery(queryString, values);
+
+    if (result.rowCount > 0) {
+      return result;
+    }
+    throw new Error("cart item not deleted");
+  }
 }
