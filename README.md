@@ -6,7 +6,7 @@
 - Easily communicate will the seller
 - Get notified for every process
 
-# System Design and Code Architecture
+## System Design and Code Architecture
 
 - Functional requirements
 - Non Functional requirements
@@ -93,7 +93,7 @@ serverless plugin install --name serverless-offline
 serverless plugin install --name serverless-plugin-typescript
 ```
 
-- Now, we can create routes by using route handlers and binding them to the serverless.yaml file functions. So, on spinning up the serverless server, when we request for a specific route, it calls that binded route handler function and returns the results according to the method specified.
+- Now, we can create routes by using route handlers and binding them to the `serverless.yml` file functions. So, on spinning up the serverless server, when we request for a specific route, it calls that bound route handler function and returns the results according to the method specified.
 
 `serverless.yml`
 
@@ -137,7 +137,7 @@ export const Signup = async (event: APIGatewayProxyEventV2) => {
 
 ### Deployment
 
-- Set new rules an parameters in the serverless.yml file
+- Set new rules an parameters in the `serverless.yml` file
 - Setup a new user in AWS IAM Portal, set Access Key and Administrator Access.
 - Now configure AWS access key and secret access key with `aws configure`
 - Deploy using serverless!
@@ -173,7 +173,7 @@ cdk init app --language=typescript
 
 ### Uploading Images from Product Service in Secure Way
 
-- Exposing image directly from nodeJs uploads to public poses security risks and potential risk of running out of storage as it will grow faster.
+- Exposing image directly from node.js uploads to public poses security risks and potential risk of running out of storage as it will grow faster.
 - Hence, using a Binary Large Object Storage like S3 is the way to go!
 
 <img src="./public/images/s3.png" alt="database design"  style="width:800px;" />
@@ -283,8 +283,80 @@ Deployment Database can be implemented in two ways
     - EC2 running hours
     - Pay as you added resources
 
-### Setting up AWS RDS Database
+### Setting up Managed AWS RDS Database
 
 - Create a standard Postgres RDS on EC2 Instance
 - Keep it private and setup Security Group
 - Setup the RDS database configurations for connections
+
+### Setting up Self-Managed AWS RDS Database
+
+- Create a EC2 instance on Ubuntu
+- Add a security group for PostgreSQL
+- Configure the Key Pair certificate file in the system
+
+```bash
+chmod 400 certificate.pem
+```
+
+- Connect to the EC2 instance using the Public DNS and enter the configured Ubuntu OS environment
+
+```bash
+ssh -i "cert.pem" ubuntu@ec2-ip.region.compute.amazonaws.com
+```
+
+- Update all packages
+- Install PostgreSQL
+
+```bash
+sudo apt-get install postgres postgresql-contrib
+```
+
+- Login into the current user `postgres` and change the password
+
+```bash
+sudo -i -u postgres
+psql
+```
+
+```sql
+ALTER USER postgres WITH PASSWORD 'secure_root_password';
+```
+
+- Create a user_service role and give it login and create database access to the instance type
+
+```sql
+CREATE ROLE user_service;
+
+ALTER ROLE user_service WITH LOGIN;
+
+ALTER ROLE user_service WITH PASSWORD 'secure_user_password';
+
+ALTER ROLE user_service WITH CREATEDB;
+```
+
+- Edit the listen_address in the PostgreSQL config file to
+
+```bash
+sudo vim /etc/postgresql/14/main/postgresql.conf
+
+listen_addresses = '*'
+```
+
+- Setup host connection access for ORMs to access the database
+
+```bash
+sudo vim /etc/postgresql/14/main/pg_hba.conf
+
+host      all      0.0.0.0/0      md5
+```
+
+- Restart PostgreSQL instance
+
+```bash
+sudo systemctl restart postgresql
+service postgres status
+```
+
+- Setup connection to the RDS using the public DNS as host of the instance
+

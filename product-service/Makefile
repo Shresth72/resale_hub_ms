@@ -8,7 +8,7 @@ dev:
 	cdk synth && sam local start-api -t cdk.out/ProductServiceStack.template.json
 
 # AWS
-cdk:
+synth:
 	cdk synth
 
 deploy:

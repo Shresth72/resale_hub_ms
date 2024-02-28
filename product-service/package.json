@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
+    "deploy": "cdk deploy --verbose --trace",
     "test": "jest",
     "cdk": "cdk",
     "dev": "cdk synth && sam local start-api -t cdk.out/ProductServiceStack.template.json"
