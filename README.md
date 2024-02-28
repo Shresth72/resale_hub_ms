@@ -244,6 +244,14 @@ Microservices communication should be
 
 <br/><br/>
 
+## Order Create Event using SNS & SQS
+
+<br/><br/>
+
+## Payment Gateway Implementation
+
+<br/><br/>
+
 ## Managing Deployment Database for User Service
 
 Deployment Database can be implemented in two ways
