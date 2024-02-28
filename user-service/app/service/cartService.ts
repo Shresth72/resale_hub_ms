@@ -1,4 +1,5 @@
 import { APIGatewayProxyEventV2 } from "aws-lambda";
+import aws from "aws-sdk";
 import { autoInjectable } from "tsyringe";
 import { PullData } from "../message-queue";
 import { CartItemModel } from "../models/CartItemsModel";
@@ -136,17 +137,36 @@ export default class CartService {
 
   async CollectPayment(event: APIGatewayProxyEventV2) {
     try {
+      const token = event.headers.authorization;
+      const payload = await VerifyToken(token);
+
       // initialize payment gateway
 
       // authenticate payment confirmation
 
       // get cart items
+      if (!payload) {
+        return ErrorResponse(403, "Invalid token");
+      }
+      const cartItems = await this.repository.findCartItems(payload.user_id);
 
       // send SNS topic to create order [transaction ms] => email to user => update inventory [product ms]
+      const params = {
+        Message: JSON.stringify(cartItems),
+        TopicArn: process.env.SNS_TOPIC,
+        MessageAttributes: {
+          actionType: {
+            DataType: "String",
+            StringValue: "place_order"
+          }
+        }
+      };
+      const sns = new aws.SNS();
+      const response = await sns.publish(params).promise();
 
       // send tentative message to user
 
-      return SuccessResponse({ message: "payment processing..." });
+      return SuccessResponse({ message: "payment processing...", response });
     } catch (error) {
       return ErrorResponse(500, error);
     }

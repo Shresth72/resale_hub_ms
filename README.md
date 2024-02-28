@@ -244,12 +244,13 @@ Microservices communication should be
 
 <br/><br/>
 
-## Order Create Event using SNS & SQS
+## Order Create Event using SNS & SQS and Payment Gateway Implementation
 
-<br/><br/>
+<img src="./public/images/sns.png" alt="database design"  style="width:800px;" />
 
-## Payment Gateway Implementation
-
+- AWS SNS acts as the publisher and SQS pulls the events (subscriber) from SNS topics using long polling and in case of fallbacks, it pushes requests to DLQ
+- To avoid redundant event publish, the user_service only publishes a single event and the actions will have specific attributes for consumers to identify. (1 to Many)
+  
 <br/><br/>
 
 ## Managing Deployment Database for User Service
