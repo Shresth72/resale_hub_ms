@@ -1,4 +1,4 @@
-# resale_hub_microservices
+# Resale_hub_microservices
 
 - Resale Product Platform
 - Sell, Buy and Advertise products
