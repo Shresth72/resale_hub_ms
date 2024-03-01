@@ -5,8 +5,15 @@ import { PullData } from "../message-queue";
 import { CartItemModel } from "../models/CartItemsModel";
 import { CartInput, UpdateCartInput } from "../models/zod/CartInput";
 import { CartRepository } from "../repository/cartRepository";
+import { UserRepository } from "../repository/userRepository";
 import { ZodErrorHandler } from "../utility/errors";
 import { VerifyToken } from "../utility/password";
+import {
+  APPLICATION_FEE,
+  CollectPayment,
+  CreatePaymentSession,
+  STRIPE_FEE
+} from "../utility/payment";
 import { ErrorResponse, SuccessResponse } from "../utility/response";
 
 @autoInjectable()
@@ -85,8 +92,17 @@ export default class CartService {
       if (!currentCart) {
         return SuccessResponse({ message: "cart is empty" });
       }
+      const totalAmount = currentCart.reduce(
+        (sum, item) => sum + item.price * item.item_qty,
+        0
+      );
+      const appFee = APPLICATION_FEE(totalAmount) + STRIPE_FEE(totalAmount);
 
-      return SuccessResponse(currentCart);
+      return SuccessResponse({
+        currentCart,
+        totalAmount,
+        appFee
+      });
     } catch (error) {
       return ErrorResponse(500, error);
     }
@@ -139,15 +155,60 @@ export default class CartService {
     try {
       const token = event.headers.authorization;
       const payload = await VerifyToken(token);
-
-      // initialize payment gateway
-
-      // authenticate payment confirmation
-
-      // get cart items
       if (!payload) {
         return ErrorResponse(403, "Invalid token");
       }
+
+      const { stripe_id, email, phone } =
+        await new UserRepository().getUserProfile(payload.user_id);
+      const cartItems = await this.repository.findCartItems(payload.user_id);
+
+      const total = cartItems.reduce(
+        (sum, item) => sum + item.price * item.item_qty,
+        0
+      );
+
+      const appFee = APPLICATION_FEE(total);
+      const stripeFee = STRIPE_FEE(total);
+      const amount = total + appFee + stripeFee;
+
+      // initialize payment gateway
+      const { clientSecret, customerId, paymentId, publishableKey } =
+        await CreatePaymentSession({
+          amount,
+          customerId: stripe_id,
+          email,
+          phone
+        });
+
+      await new UserRepository().updateUserPayment({
+        userId: payload.user_id,
+        paymentId,
+        customerId
+      });
+
+      return SuccessResponse({
+        clientSecret,
+        publishableKey
+      });
+    } catch (error) {
+      return ErrorResponse(500, error);
+    }
+  }
+
+  async PlaceOrder(event: APIGatewayProxyEventV2) {
+    const token = event.headers.authorization;
+    const payload = await VerifyToken(token);
+    if (!payload) {
+      return ErrorResponse(403, "Invalid token");
+    }
+
+    const { payment_id } = await new UserRepository().getUserProfile(
+      payload.user_id
+    );
+    const paymentInfo = await CollectPayment(payment_id);
+
+    if (paymentInfo.status === "succeeded") {
       const cartItems = await this.repository.findCartItems(payload.user_id);
 
       // send SNS topic to create order [transaction ms] => email to user => update inventory [product ms]
@@ -163,12 +224,11 @@ export default class CartService {
       };
       const sns = new aws.SNS();
       const response = await sns.publish(params).promise();
+      console.log("SNS response: ", response);
 
-      // send tentative message to user
-
-      return SuccessResponse({ message: "payment processing...", response });
-    } catch (error) {
-      return ErrorResponse(500, error);
+      return SuccessResponse({ message: "order placed" });
     }
+
+    return ErrorResponse(500, "payment not successful");
   }
 }

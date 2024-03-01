@@ -73,3 +73,7 @@ export const Payment = async (event: APIGatewayProxyEventV2) => {
     return ErrorResponse(404, "invalid http method");
   }
 };
+
+export const PlaceOrder = async (event: APIGatewayProxyEventV2) => {
+  return cartService.PlaceOrder(event);
+};

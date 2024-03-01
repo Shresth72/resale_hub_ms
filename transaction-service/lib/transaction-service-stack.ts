@@ -44,7 +44,7 @@ export class TransactionServiceStack extends cdk.Stack {
       bundling: {
         externalModules: ["aws-sdk"]
       },
-      runtime: Runtime.NODEJS_16_X,
+      runtime: Runtime.NODEJS_16_X, 
       timeout: cdk.Duration.seconds(30)
     };
 

@@ -105,7 +105,7 @@ export class UserRepository extends DBOperation {
 
   async getUserProfile(user_id: number) {
     const profileQuery =
-      "SELECT first_name, last_name, email, phone, user_type, verified FROM users WHERE user_id = $1;";
+      "SELECT first_name, last_name, email, phone, user_type, verified, payment_id, stripe_id FROM users WHERE user_id = $1;";
     const profileValues = [user_id];
 
     const profileResult = await this.executeQuery(profileQuery, profileValues);
@@ -152,5 +152,25 @@ export class UserRepository extends DBOperation {
     }
 
     throw new Error("error while updating profile");
+  }
+
+  async updateUserPayment({
+    userId,
+    paymentId,
+    customerId
+  }: {
+    userId: number;
+    paymentId: string;
+    customerId: string;
+  }) {
+    const queryString =
+      "UPDATE users SET stripe_id=$1, payment_id=$2 WHERE user_id=$3 RETURNING *;";
+    const values = [customerId, paymentId, userId];
+
+    const result = await this.executeQuery(queryString, values);
+    if (result.rowCount > 0) {
+      return result.rows[0] as UserModel;
+    }
+    throw new Error("error while updating user payment");
   }
 }

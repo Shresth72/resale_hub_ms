@@ -3,6 +3,8 @@ app: user-service
 service: user-service
 frameworkVersion: "3"
 
+useDotenv: true
+
 provider:
   name: aws
   runtime: nodejs18.x
@@ -88,16 +90,26 @@ functions:
       - httpApi:
           path: /payment
           method: put
-  order:
+  collect-payment:
     handler: app/handler.CollectPayment
     events:
       - httpApi:
-          path: /place-order
+          path: /collect-payment
+          method: post
+  place-order:
+    handler: app/handler.PlaceOrder
+    events:
+      - httpApi:
+          path: /order
           method: post
 
 plugins:
   - serverless-offline
   - serverless-plugin-typescript
+  # - serverless-plugin-optimize
+
+# package:
+#   individually: true
 
 resources:
   Resources:
